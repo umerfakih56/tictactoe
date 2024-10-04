@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Wood Background with Cartoon Figures */
+        body {
+            background: linear-gradient(135deg, #7fd3f2 25%, #ff7979 75%);
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cartoonic Figures as background decoration */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+    
+            background-position: top left, bottom right;
+            background-repeat: no-repeat;
+            background-size: 150px, 150px;
+            opacity: 0.2; /* Light opacity for subtle effect */
+        }
+
+        .cell {
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        /* Cell Hover Animation */
+        .cell:hover {
+            background-color: #f1f1f1;
+            transform: scale(1.1);
+        }
+
+        /* Animation for appearing X or O */
+        .cell.active {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center h-screen relative">
+    <div class="text-center relative">
+        <h1 class="text-4xl font-bold text-gray-800 mb-8">Tic Tac Toe</h1>
+        <div id="game-container" class="relative inline-block">
+            <div id="game" class="grid grid-cols-3 gap-4 w-72 mx-auto relative">
+                <!-- Tic Tac Toe Cells -->
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+                <div class="cell bg-amber-100 h-24 w-24 flex justify-center items-center text-4xl font-bold cursor-pointer rounded-lg border-4 border-gray-500 relative" data-cell></div>
+            </div>
+        </div>
+        <p id="result" class="text-2xl font-semibold text-gray-800 mt-8"></p>
+        <button id="restart" class="mt-4 bg-green-500 text-white py-2 px-4 rounded-lg transition hover:bg-green-600">Restart Game</button>
+    </div>
+
+    <script>
+        const cells = document.querySelectorAll('[data-cell]');
+        const resultText = document.getElementById('result');
+        const restartButton = document.getElementById('restart');
+        const X_CLASS = 'text-blue-500';
+        const O_CLASS = 'text-red-500';
+        let currentPlayer = 'X';
+        let gameBoard = Array(9).fill(null);
+
+        const WINNING_COMBINATIONS = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function handleClick(e) {
+            const cell = e.target;
+            const index = Array.from(cells).indexOf(cell);
+
+            // Place Mark
+            if (!gameBoard[index]) {
+                gameBoard[index] = currentPlayer;
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer === 'X' ? X_CLASS : O_CLASS);
+                cell.classList.add('active'); // Adding animation
+                if (checkWin(currentPlayer)) {
+                    resultText.textContent = `${currentPlayer} Wins!`;
+                    disableBoard();
+                } else if (isDraw()) {
+                    resultText.textContent = `It's a Draw!`;
+                } else {
+                    switchPlayer();
+                }
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkWin(player) {
+            return WINNING_COMBINATIONS.some(combination => {
+                return combination.every(index => {
+                    return gameBoard[index] === player;
+                });
+            });
+        }
+
+        function isDraw() {
+            return gameBoard.every(cell => cell);
+        }
+
+        function disableBoard() {
+            cells.forEach(cell => cell.removeEventListener('click', handleClick));
+        }
+
+        function startGame() {
+            gameBoard.fill(null);
+            currentPlayer = 'X';
+            resultText.textContent = '';
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove(X_CLASS, O_CLASS, 'active');
+                cell.addEventListener('click', handleClick, { once: true });
+            });
+        }
+
+        restartButton.addEventListener('click', startGame);
+
+        startGame();
+    </script>
+</body>
+</html>
